@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Razorpay Payment</title>
+</head>
+<body>
+    <form action="/add" method="POST">
+        <input type="text" name="message" placeholder="Write something..." required autocomplete="off">
+        <button type="submit">Post</button>
+    </form>
+
+
+
+  <h1>Razorpay Payment Gateway Integration</h1><img src="/pants.jpg" alt="pants">
+  <form id="payment-form">
+    <label for="amount">Amount (INR):</label>
+ <h1>10</h1>
+    <button type="button" onclick="payNow()">Pay Now</button>
+  </form>
+  <hr><div>
+      <h2>
+    Privacy and policy
+    
+  </h2>
+  We value your privacy and are committed to protecting your personal information. This Privacy Policy outlines the types of information we collect when you visit our website or use our services, how we use it, and the steps we take to ensure its security. We collect only the necessary details required to process your transactions and improve your experience, and we do not share your information with third parties except as needed to provide our services or comply with the law.
+  </div>
+  <hr>
+  <div>
+    <h3>Refund </h3>
+    We strive to ensure your complete satisfaction with our services. Regarding refunds and cancellations, we handle requests on a case-by-case basis, taking into account the specifics of the order. Please check the product or service description for details on eligibility, as certain items may be non-refundable.
+  </div>
+<div>
+  <h4>contact</h4>
+  ph= +91 6201852663
+  mail= sriomkumasingh@gmail.com
+</div>
+
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    async function payNow() {
+      const amount = 10;
+
+      // Check if amount is empty or 0
+      if (!amount || amount <= 0) {
+        alert("Please enter a valid amount");
+        return;
+      }
+
+      try {
+        // 1. Create order by calling the server endpoint
+        const response = await fetch('/create-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ amount, currency: 'INR', receipt: 'receipt#1', notes: {} })
+        });
+        
+        const order = await response.json();
+
+        // 2. Safety check: Ensure the backend actually created an order
+        if (!order || !order.id) {
+            alert('Failed to create order. Please check if the server is running.');
+            console.error("Order error:", order);
+            return;
+        }
+
+        // 3. Open Razorpay Checkout
+        const options = {
+          key: 'rzp_test_TNOhiK4fxMeqO7', // Replace with your Test Key ID
+          amount: order.amount,
+          currency: order.currency,
+          name: 'Your Company Name',
+          description: 'Test Transaction',
+          order_id: order.id, 
+          
+          // 4. Handle the payment silently in the background
+          handler: function (response) {
+              fetch('/verify-payment', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                      razorpay_order_id: response.razorpay_order_id,
+                      razorpay_payment_id: response.razorpay_payment_id,
+                      razorpay_signature: response.razorpay_signature
+                  })
+              }).then(res => res.json())
+                .then(data => {
+                   console.log(data.success);
+                    if (data.success) {
+                        // Redirect ONLY after verification succeeds
+                        window.location.href = '/payment-success';
+                    } else {
+                     
+                        alert('Payment verification failed');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Error verifying payment');
+                });
+          },
+          // callback_url has been intentionally REMOVED from here to fix the conflict!
+          
+          prefill: {
+            name: 'Your Name',
+            email: 'your.email@example.com',
+            contact: '9999999999'
+          },
+          theme: {
+            color: '#F37254'
+          },
+        };
+
+        const rzp = new Razorpay(options);
+        
+        // 5. Catch user closing the modal or payment failing inside the modal
+        rzp.on('payment.failed', function (response){
+            console.error("Payment Failed:", response.error.description);
+            alert("Payment failed: " + response.error.description);
+        });
+
+        rzp.open();
+
+      } catch (error) {
+        console.error("Fetch error:", error);
+        alert("Something went wrong connecting to the server.");
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "razor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "body-parser": "^2.3.0",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
+    "pg": "^8.22.0",
+    "razorpay": "^2.9.8",
+    "start": "^5.1.0",
+    "url": "^0.11.4"
+  }
+}
